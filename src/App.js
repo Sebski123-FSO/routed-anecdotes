@@ -1,6 +1,12 @@
 import PropTypes from "prop-types";
 import React, { useState } from "react";
-import { Link, Route, Routes, useMatch } from "react-router-dom";
+import {
+  Link,
+  Route,
+  Routes,
+  useMatch,
+  useNavigate,
+} from "react-router-dom";
 
 const Menu = () => {
   const padding = {
@@ -88,6 +94,8 @@ const CreateNew = (props) => {
   const [author, setAuthor] = useState("");
   const [info, setInfo] = useState("");
 
+  const navigate = useNavigate();
+
   const handleSubmit = (e) => {
     e.preventDefault();
     props.addNew({
@@ -96,6 +104,10 @@ const CreateNew = (props) => {
       info,
       votes: 0,
     });
+    setContent("");
+    setAuthor("");
+    setInfo("");
+    navigate("/");
   };
 
   return (
@@ -136,6 +148,17 @@ CreateNew.propTypes = {
   addNew: PropTypes.func.isRequired,
 };
 
+const Notification = ({ notification }) => {
+  const style = {
+    display: notification ? "" : "none",
+    borderStyle: "solid",
+  };
+
+  return <div style={style}>{notification}</div>;
+};
+
+Notification.propTypes = { notification: PropTypes.string.isRequired };
+
 const App = () => {
   const [anecdotes, setAnecdotes] = useState([
     {
@@ -154,11 +177,15 @@ const App = () => {
     },
   ]);
 
-  // const [notification, setNotification] = useState("");
+  const [notification, setNotification] = useState("");
 
   const addNew = (anecdote) => {
     anecdote.id = Math.floor(Math.random() * 10000);
     setAnecdotes(anecdotes.concat(anecdote));
+    setNotification(`a new anecdote ${anecdote.content} created!`);
+    setTimeout(() => {
+      setNotification("");
+    }, 5000);
   };
 
   // const anecdoteById = (id) => anecdotes.find((a) => a.id === id);
@@ -182,7 +209,7 @@ const App = () => {
     <>
       <h1>Software anecdotes</h1>
       <Menu />
-
+      <Notification notification={notification} />
       <Routes>
         <Route path="/" element={<AnecdoteList anecdotes={anecdotes} />} />
         <Route path="/create" element={<CreateNew addNew={addNew} />} />
