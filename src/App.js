@@ -1,11 +1,6 @@
 import PropTypes from "prop-types";
 import React, { useState } from "react";
-import {
-  BrowserRouter as Router,
-  Link,
-  Route,
-  Routes,
-} from "react-router-dom";
+import { Link, Route, Routes, useMatch } from "react-router-dom";
 
 const Menu = () => {
   const padding = {
@@ -26,12 +21,25 @@ const Menu = () => {
   );
 };
 
+const Anecdote = ({ anecdote }) => {
+  return (
+    <>
+      <h2>{anecdote.content}</h2>
+      <p>has {anecdote.votes} votes</p>
+    </>
+  );
+};
+
+Anecdote.propTypes = { anecdote: PropTypes.object.isRequired };
+
 const AnecdoteList = ({ anecdotes }) => (
   <div>
     <h2>Anecdotes</h2>
     <ul>
       {anecdotes.map((anecdote) => (
-        <li key={anecdote.id}>{anecdote.content}</li>
+        <li key={anecdote.id}>
+          <Link to={`/anecdotes/${anecdote.id}`}>{anecdote.content}</Link>
+        </li>
       ))}
     </ul>
   </div>
@@ -149,7 +157,7 @@ const App = () => {
   // const [notification, setNotification] = useState("");
 
   const addNew = (anecdote) => {
-    anecdote.id = (Math.random() * 10000).toFixed(0);
+    anecdote.id = Math.floor(Math.random() * 10000);
     setAnecdotes(anecdotes.concat(anecdote));
   };
 
@@ -165,19 +173,27 @@ const App = () => {
 
   //   setAnecdotes(anecdotes.map((a) => (a.id === id ? voted : a)));
   // };
+  const match = useMatch("/anecdotes/:id");
+  const anecdote = match
+    ? anecdotes.find((anecdote) => anecdote.id === Number(match.params.id))
+    : null;
 
   return (
-    <Router>
+    <>
       <h1>Software anecdotes</h1>
       <Menu />
 
       <Routes>
         <Route path="/" element={<AnecdoteList anecdotes={anecdotes} />} />
         <Route path="/create" element={<CreateNew addNew={addNew} />} />
-        <Route path="about" element={<About />} />
+        <Route path="/about" element={<About />} />
+        <Route
+          path="/anecdotes/:id"
+          element={<Anecdote anecdote={anecdote} />}
+        />
       </Routes>
       <Footer />
-    </Router>
+    </>
   );
 };
 
